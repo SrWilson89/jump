@@ -1,0 +1,185 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #87ceeb;
+    overflow: hidden;
+    touch-action: manipulation;
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #87ceeb 0%, #e0f7ff 100%);
+}
+
+#sonic {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    bottom: 100px;
+    left: 50px;
+    background-color: blue; /* Cambiamos el color a azul */
+    border-radius: 50%; /* Hacemos que sea un círculo */
+    box-shadow: 0 0 10px rgba(0, 0, 255, 0.7); /* Añadimos una sombra para darle profundidad */
+    z-index: 10;
+}
+
+.ground {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100px;
+    background-color: #8b5a2b;
+    border-top: 5px solid #228b22;
+}
+
+.obstacle {
+    position: absolute;
+    width: 30px;
+    height: 50px;
+    bottom: 100px;
+    background-color: #2f4f4f;
+    border-radius: 5px;
+}
+
+.ring {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    bottom: 120px;
+    background-color: gold;
+    border-radius: 50%;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 10px #ffd700;
+}
+
+#score-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 20;
+}
+
+#controls {
+    position: absolute;
+    bottom: 110px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 20;
+}
+
+.control-btn {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    border: 2px solid #333;
+    user-select: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.control-btn:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+#game-over {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: white;
+    z-index: 30;
+}
+
+#game-over h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+#restart-btn {
+    padding: 10px 20px;
+    font-size: 24px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#restart-btn:hover {
+    background-color: #45a049;
+}
+
+#start-screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: white;
+    z-index: 30;
+}
+
+#start-screen h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#start-btn {
+    padding: 10px 20px;
+    font-size: 24px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#start-btn:hover {
+    background-color: #45a049;
+}
+
+@media (min-width: 768px) {
+    #controls {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    #start-screen h1, #game-over h1 {
+        font-size: 32px;
+    }
+    
+    #score-container {
+        font-size: 18px;
+    }
+}
