@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Saltos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #87ceeb;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #87ceeb 0%, #e0f7ff 100%);
+        }
+        
+        #sonic {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            bottom: 100px;
+            left: 50px;
+            background-image: url('/api/placeholder/50/50');
+            background-size: contain;
+            z-index: 10;
+        }
+        
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100px;
+            background-color: #8b5a2b;
+            border-top: 5px solid #228b22;
+        }
+        
+        .obstacle {
+            position: absolute;
+            width: 30px;
+            height: 50px;
+            bottom: 100px;
+            background-color: #2f4f4f;
+            border-radius: 5px;
+        }
+        
+        .ring {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            bottom: 120px;
+            background-color: gold;
+            border-radius: 50%;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 10px #ffd700;
+        }
+        
+        #score-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 110px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 20;
+        }
+        
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid #333;
+            user-select: none;
+        }
+        
+        #game-over {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            z-index: 30;
+        }
+        
+        #game-over h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        #restart-btn {
+            padding: 10px 20px;
+            font-size: 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        @media (min-width: 768px) {
+            #controls {
+                display: none;
+            }
+        }
+        
+        #start-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            z-index: 30;
+        }
+        
+        #start-screen h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        #start-btn {
+            padding: 10px 20px;
+            font-size: 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 600px) {
+            #start-screen h1, #game-over h1 {
+                font-size: 32px;
+            }
+            
+            #score-container {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="score-container">Puntos: <span id="score">0</span> | Anillos: <span id="rings">0</span></div>
+        <div id="sonic"></div>
+        <div class="ground"></div>
+        <div id="controls">
+            <div class="control-btn" id="left-btn">←</div>
+            <div class="control-btn" id="jump-btn">↑</div>
+            <div class="control-btn" id="right-btn">→</div>
+        </div>
+        <div id="game-over">
+            <h1>¡Game Over!</h1>
+            <p>Tu puntuación: <span id="final-score">0</span></p>
+            <button id="restart-btn">Reiniciar</button>
+        </div>
+        <div id="start-screen">
+            <h1>Juego de Sonic</h1>
+            <p>Presiona las teclas de flecha para moverte y saltar</p>
+            <p>En móviles, usa los botones en pantalla</p>
+            <button id="start-btn">¡Comenzar!</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const gameContainer = document.getElementById('game-container');
+            const sonic = document.getElementById('sonic');
+            const scoreElement = document.getElementById('score');
+            const ringsElement = document.getElementById('rings');
+            const gameOverScreen = document.getElementById('game-over');
+            const finalScoreElement = document.getElementById('final-score');
+            const restartBtn = document.getElementById('restart-btn');
+            const startScreen = document.getElementById('start-screen');
+            const startBtn = document.getElementById('start-btn');
+            const leftBtn = document.getElementById('left-btn');
+            const rightBtn = document.getElementById('right-btn');
+            const jumpBtn = document.getElementById('jump-btn');
+            
+            let gameStarted = false;
+            let isJumping = false;
+            let score = 0;
+            let rings = 0;
+            let speed = 5;
+            let position = 50;
+            let gravity = 0.9;
+            let jumpForce = 15;
+            let velocityY = 0;
+            let gameInterval;
+            let obstacleInterval;
+            let ringInterval;
+            let obstacles = [];
+            let ringsArray = [];
+            let isMovingLeft = false;
+            let isMovingRight = false;
+            
+            startBtn.addEventListener('click', startGame);
+            restartBtn.addEventListener('click', restartGame);
+            
+            // Controles tactiles
+            leftBtn.addEventListener('touchstart', () => { isMovingLeft = true; });
+            leftBtn.addEventListener('touchend', () => { isMovingLeft = false; });
+            rightBtn.addEventListener('touchstart', () => { isMovingRight = true; });
+            rightBtn.addEventListener('touchend', () => { isMovingRight = false; });
+            jumpBtn.addEventListener('touchstart', jump);
+            
+            // También permitir hacer clic para dispositivos no táctiles
+            leftBtn.addEventListener('mousedown', () => { isMovingLeft = true; });
+            leftBtn.addEventListener('mouseup', () => { isMovingLeft = false; });
+            rightBtn.addEventListener('mousedown', () => { isMovingRight = true; });
+            rightBtn.addEventListener('mouseup', () => { isMovingRight = false; });
+            jumpBtn.addEventListener('mousedown', jump);
+            
+            document.addEventListener('keydown', handleKeyDown);
+            document.addEventListener('keyup', handleKeyUp);
+            
+            function handleKeyDown(e) {
+                if (!gameStarted) return;
+                
+                switch (e.key) {
+                    case 'ArrowUp':
+                        jump();
+                        break;
+                    case 'ArrowLeft':
+                        isMovingLeft = true;
+                        break;
+                    case 'ArrowRight':
+                        isMovingRight = true;
+                        break;
+                }
+            }
+            
+            function handleKeyUp(e) {
+                if (!gameStarted) return;
+                
+                switch (e.key) {
+                    case 'ArrowLeft':
+                        isMovingLeft = false;
+                        break;
+                    case 'ArrowRight':
+                        isMovingRight = false;
+                        break;
+                }
+            }
+            
+            function startGame() {
+                startScreen.style.display = 'none';
+                gameStarted = true;
+                gameInterval = setInterval(updateGame, 20);
+                obstacleInterval = setInterval(createObstacle, 2000);
+                ringInterval = setInterval(createRing, 1500);
+            }
+            
+            function restartGame() {
+                clearInterval(gameInterval);
+                clearInterval(obstacleInterval);
+                clearInterval(ringInterval);
+                
+                // Limpiar obstáculos y anillos
+                obstacles.forEach(obstacle => {
+                    if (obstacle.element) {
+                        obstacle.element.remove();
+                    }
+                });
+                ringsArray.forEach(ring => {
+                    if (ring.element) {
+                        ring.element.remove();
+                    }
+                });
+                
+                obstacles = [];
+                ringsArray = [];
+                
+                // Reiniciar valores
+                score = 0;
+                rings = 0;
+                position = 50;
+                velocityY = 0;
+                isJumping = false;
+                
+                // Actualizar UI
+                scoreElement.textContent = '0';
+                ringsElement.textContent = '0';
+                sonic.style.bottom = '100px';
+                sonic.style.left = '50px';
+                
+                gameOverScreen.style.display = 'none';
+                gameStarted = true;
+                
+                // Reiniciar intervalos
+                gameInterval = setInterval(updateGame, 20);
+                obstacleInterval = setInterval(createObstacle, 2000);
+                ringInterval = setInterval(createRing, 1500);
+            }
+            
+            function jump() {
+                if (!isJumping && gameStarted) {
+                    isJumping = true;
+                    velocityY = jumpForce;
+                }
+            }
+            
+            function createObstacle() {
+                if (!gameStarted) return;
+                
+                const obstacle = document.createElement('div');
+                obstacle.classList.add('obstacle');
+                gameContainer.appendChild(obstacle);
+                
+                const obstaclePosition = Math.random() * (gameContainer.offsetWidth - 30) + gameContainer.offsetWidth;
+                obstacle.style.left = obstaclePosition + 'px';
+                
+                obstacles.push({
+                    element: obstacle,
+                    position: obstaclePosition
+                });
+            }
+            
+            function createRing() {
+                if (!gameStarted) return;
+                
+                const ring = document.createElement('div');
+                ring.classList.add('ring');
+                gameContainer.appendChild(ring);
+                
+                const ringX = Math.random() * (gameContainer.offsetWidth - 30) + gameContainer.offsetWidth;
+                const ringY = Math.random() * 100 + 120; // Altura variable
+                
+                ring.style.left = ringX + 'px';
+                ring.style.bottom = ringY + 'px';
+                
+                ringsArray.push({
+                    element: ring,
+                    position: ringX,
+                    height: ringY,
+                    collected: false
+                });
+            }
+            
+            function updateGame() {
+                if (!gameStarted) return;
+                
+                // Actualizar posición de Sonic
+                if (isMovingLeft) {
+                    position -= speed;
+                    if (position < 0) position = 0;
+                }
+                
+                if (isMovingRight) {
+                    position += speed;
+                    if (position > gameContainer.offsetWidth - 50) {
+                        position = gameContainer.offsetWidth - 50;
+                    }
+                }
+                
+                // Física de salto
+                if (isJumping) {
+                    velocityY -= gravity;
+                    const newBottom = parseInt(window.getComputedStyle(sonic).getPropertyValue('bottom')) + velocityY;
+                    
+                    if (newBottom <= 100) {
+                        sonic.style.bottom = '100px';
+                        isJumping = false;
+                        velocityY = 0;
+                    } else {
+                        sonic.style.bottom = newBottom + 'px';
+                    }
+                }
+                
+                sonic.style.left = position + 'px';
+                
+                // Mover obstáculos
+                obstacles.forEach((obstacle, index) => {
+                    obstacle.position -= speed;
+                    
+                    if (obstacle.element) {
+                        obstacle.element.style.left = obstacle.position + 'px';
+                        
+                        // Detectar colisión
+                        if (
+                            position < obstacle.position + 30 &&
+                            position + 50 > obstacle.position &&
+                            parseInt(window.getComputedStyle(sonic).getPropertyValue('bottom')) < 150
+                        ) {
+                            // Colisión
+                            if (rings > 0) {
+                                // Perder anillos en lugar de game over
+                                rings = 0;
+                                ringsElement.textContent = rings;
+                            } else {
+                                gameOver();
+                            }
+                        }
+                    }
+                    
+                    // Eliminar obstáculos fuera de la pantalla
+                    if (obstacle.position < -30) {
+                        if (obstacle.element) {
+                            obstacle.element.remove();
+                        }
+                        obstacles.splice(index, 1);
+                        score += 10;
+                        scoreElement.textContent = score;
+                    }
+                });
+                
+                // Mover anillos
+                ringsArray.forEach((ring, index) => {
+                    ring.position -= speed;
+                    
+                    if (ring.element) {
+                        ring.element.style.left = ring.position + 'px';
+                        
+                        // Detectar colección de anillo
+                        const sonicBottom = parseInt(window.getComputedStyle(sonic).getPropertyValue('bottom'));
+                        
+                        if (
+                            !ring.collected &&
+                            position < ring.position + 30 &&
+                            position + 50 > ring.position &&
+                            sonicBottom < ring.height + 30 &&
+                            sonicBottom + 50 > ring.height
+                        ) {
+                            // Recoger anillo
+                            ring.collected = true;
+                            ring.element.style.display = 'none';
+                            rings++;
+                            ringsElement.textContent = rings;
+                            score += 5;
+                            scoreElement.textContent = score;
+                        }
+                    }
+                    
+                    // Eliminar anillos fuera de la pantalla
+                    if (ring.position < -30) {
+                        if (ring.element) {
+                            ring.element.remove();
+                        }
+                        ringsArray.splice(index, 1);
+                    }
+                });
+                
+                // Aumentar dificultad con el tiempo
+                if (score > 0 && score % 100 === 0) {
+                    speed += 0.1;
+                }
+            }
+            
+            function gameOver() {
+                gameStarted = false;
+                clearInterval(gameInterval);
+                clearInterval(obstacleInterval);
+                clearInterval(ringInterval);
+                
+                finalScoreElement.textContent = score;
+                gameOverScreen.style.display = 'flex';
+            }
+            
+            // Ajustar al tamaño de la ventana
+            window.addEventListener('resize', function() {
+                // Asegurarse de que Sonic esté dentro de los límites
+                if (position > gameContainer.offsetWidth - 50) {
+                    position = gameContainer.offsetWidth - 50;
+                    sonic.style.left = position + 'px';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
